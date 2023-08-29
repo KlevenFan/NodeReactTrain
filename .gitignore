@@ -1,7 +1,12 @@
+#忽略webstrom的文件
+.idea/*
+
+#忽略node_modules
+node_modules/
+
 logs/
 npm-debug.log
 yarn-error.log
-node_modules/
 *-lock.json
 *-lock.yaml
 yarn.lock
