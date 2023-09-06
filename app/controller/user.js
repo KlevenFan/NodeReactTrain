@@ -78,6 +78,63 @@ class UserController extends Controller {
     }
   }
 
+  async getUserInfo() {
+    const {ctx, app} = this;
+    const token = ctx.request.header.authorization;
+    const decode = app.jwt.verify(token, app.config.jwt.secret);
+    const userInfo = await ctx.service.user.getUserByName(decode.username);
+
+    ctx.body = {
+      code: 200,
+      msg: '请求成功',
+      data: {
+        id: userInfo.id,
+        username: userInfo.username,
+        signature: userInfo.signature || '',
+        avatar: userInfo.avatar || defaultAvatar
+      }
+    }
+  }
+
+  async editUserInfo() {
+    const {ctx, app} = this;
+    const {signature = '', avatar = ''} = ctx.request.body;
+
+    try {
+      let user_id
+      const token = ctx.request.header.authorization;
+      // 解密 token 中的用户名称
+      const decode = await app.jwt.verify(token, app.config.jwt.secret);
+
+      if (!decode) return;
+
+      user_id = decode.id;
+      const userInfo = await ctx.service.user.getUserByName(decode.username);
+      const result = await ctx.service.user.editUserInfo({
+        ...userInfo,
+        signature,
+        avatar,
+      })
+
+      ctx.body = {
+        code: 200,
+        msg: '请求成功',
+        data: {
+          id: user_id,
+          signature,
+          username: userInfo.username,
+          avatar,
+        }
+      }
+    } catch (e) {
+      ctx.body = {
+        code: 500,
+        msg: '更新用户信息错误',
+        data: null,
+      }
+    }
+  }
+
   async test() {
     const {ctx, app} = this;
     const token = ctx.request.header.authorization;
